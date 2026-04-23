@@ -211,7 +211,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 600);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -550,3 +550,4 @@ export default function App() {
     </>
   );
 }
+  
