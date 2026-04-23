@@ -30,6 +30,8 @@ const TYPE_COLORS = {
   Other: { bg: "#e3edf7", text: "#2a4a6b", dot: "#5a8fc2" },
 };
 
+const isMobile = () => window.innerWidth <= 600;
+
 function ItemCard({ item, collections, onEdit, onDelete, onToggleCollection }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef();
@@ -211,7 +213,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 600);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -232,6 +234,8 @@ export default function App() {
     }
     load();
   }, []);
+
+  const closeSidebarOnMobile = () => { if (isMobile()) setSidebarOpen(false); };
 
   const filtered = items.filter(item => {
     const matchType = activeTab === "All" || item.type === activeTab;
@@ -308,9 +312,19 @@ export default function App() {
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
         .app { display: flex; height: 100vh; overflow: hidden; }
 
-        .sidebar { width: 248px; min-width: 248px; background: var(--sidebar-bg); display: flex; flex-direction: column; transition: width 0.3s ease, min-width 0.3s ease; overflow: hidden; position: relative; flex-shrink: 0; }
+        /* SIDEBAR OVERLAY - mobile only */
+        .sidebar-overlay { display: none; }
+        @media (max-width: 600px) {
+          .sidebar-overlay { display: block; position: fixed; inset: 0; z-index: 49; background: rgba(13,51,73,0.45); animation: fadeIn 0.2s ease; }
+        }
+
+        .sidebar { width: 248px; min-width: 248px; background: var(--sidebar-bg); display: flex; flex-direction: column; transition: width 0.3s ease, min-width 0.3s ease; overflow: hidden; position: relative; flex-shrink: 0; z-index: 50; }
         .sidebar::after { content: ''; position: absolute; top: -80px; right: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(42,184,160,0.12), transparent 70%); pointer-events: none; }
         .sidebar.closed { width: 0; min-width: 0; }
+        @media (max-width: 600px) {
+          .sidebar { position: fixed; height: 100%; box-shadow: 4px 0 24px rgba(0,0,0,0.25); }
+        }
+
         .sidebar-logo { padding: 28px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .logo-mark { font-size: 1.7rem; margin-bottom: 8px; display: block; }
         .sidebar-logo h1 { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: white; white-space: nowrap; }
@@ -345,27 +359,36 @@ export default function App() {
 
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .topbar { display: flex; align-items: center; gap: 14px; padding: 16px 28px; background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 1px 4px rgba(13,51,73,0.06); }
-        .toggle-sidebar { background: none; border: none; cursor: pointer; padding: 7px 9px; border-radius: 8px; color: var(--text-soft); font-size: 1rem; transition: background 0.15s, color 0.15s; }
+        @media (max-width: 600px) { .topbar { padding: 12px 16px; } }
+        .toggle-sidebar { background: none; border: none; cursor: pointer; padding: 7px 9px; border-radius: 8px; color: var(--text-soft); font-size: 1rem; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
         .toggle-sidebar:hover { background: var(--mist); color: var(--text); }
-        .search-wrap { flex: 1; position: relative; max-width: 460px; }
+        .search-wrap { flex: 1; position: relative; }
         .search-wrap input { width: 100%; padding: 9px 16px 9px 40px; border: 1.5px solid var(--border); border-radius: 28px; background: var(--bg); font-size: 0.875rem; font-family: 'Outfit', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
         .search-wrap input:focus { border-color: var(--teal-mid); box-shadow: 0 0 0 3px rgba(42,184,160,0.14); background: white; }
         .search-wrap input::placeholder { color: var(--text-soft); }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-soft); font-size: 0.85rem; pointer-events: none; }
-        .btn-add { display: flex; align-items: center; gap: 7px; padding: 9px 22px; background: linear-gradient(135deg, var(--teal), #169080); color: white; border: none; border-radius: 28px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; white-space: nowrap; box-shadow: 0 4px 16px rgba(26,122,110,0.32); transition: transform 0.15s, box-shadow 0.15s; }
+        .btn-add { display: flex; align-items: center; gap: 7px; padding: 9px 22px; background: linear-gradient(135deg, var(--teal), #169080); color: white; border: none; border-radius: 28px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; white-space: nowrap; box-shadow: 0 4px 16px rgba(26,122,110,0.32); transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0; }
         .btn-add:hover { transform: translateY(-1px); box-shadow: 0 7px 22px rgba(26,122,110,0.42); }
         .btn-add:active { transform: scale(0.97); }
+        @media (max-width: 600px) { .btn-add { padding: 9px 14px; } }
+
         .hero-bar { display: flex; align-items: center; padding: 22px 28px 0; }
         .hero-bar h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--text); font-weight: 500; }
-        .tabs { display: flex; gap: 6px; padding: 16px 28px 0; }
+        @media (max-width: 600px) { .hero-bar { padding: 16px 16px 0; } .hero-bar h2 { font-size: 1.3rem; } }
+
+        .tabs { display: flex; gap: 6px; padding: 16px 28px 0; flex-wrap: wrap; }
+        @media (max-width: 600px) { .tabs { padding: 12px 16px 0; } }
         .tab { padding: 8px 18px; border-radius: 28px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); color: var(--text-mid); background: white; transition: all 0.15s; font-family: 'Outfit', sans-serif; }
         .tab:hover { border-color: var(--teal-mid); color: var(--text); }
         .tab.active { background: var(--text); color: white; border-color: var(--text); box-shadow: 0 3px 10px rgba(13,51,73,0.22); }
+
         .content { flex: 1; overflow-y: auto; padding: 20px 28px 40px; }
+        @media (max-width: 600px) { .content { padding: 16px 16px 40px; } }
         .results-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
         .results-info { font-size: 0.75rem; color: var(--text-soft); white-space: nowrap; }
         .results-divider { flex: 1; height: 1px; background: var(--border); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 
         .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 8px var(--shadow); animation: fadeUp 0.35s ease both; transition: box-shadow 0.22s, transform 0.22s; }
         .card:hover { box-shadow: 0 10px 32px var(--shadow-lg); transform: translateY(-3px); }
@@ -434,14 +457,14 @@ export default function App() {
         .btn-primary { padding: 9px 24px; background: linear-gradient(135deg, var(--teal), #169080); color: white; border: none; border-radius: 9px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 14px rgba(26,122,110,0.3); transition: transform 0.15s, box-shadow 0.15s; }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,122,110,0.4); }
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
-        @media (max-width: 600px) {
-          .sidebar { position: absolute; z-index: 50; height: 100%; box-shadow: 4px 0 20px rgba(0,0,0,0.2); }
-          .topbar, .hero-bar, .content { padding-left: 16px; padding-right: 16px; }
-          .tabs { padding-left: 16px; padding-right: 16px; }
-        }
       `}</style>
 
       <div className="app">
+        {/* Overlay to close sidebar on mobile */}
+        {sidebarOpen && isMobile() && (
+          <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+        )}
+
         <div className={"sidebar" + (sidebarOpen ? "" : " closed")}>
           <div className="sidebar-logo">
             <span className="logo-mark">🌿</span>
@@ -453,7 +476,7 @@ export default function App() {
               <div className="sidebar-section-title">Browse</div>
               {["All", "Recipes", "Patterns", "Other"].map(t => (
                 <div key={t} className={"sidebar-item" + (!activeCollection && activeTab === t ? " active" : "")}
-                  onClick={() => { setActiveTab(t); setActiveCollection(null); }}>
+                  onClick={() => { setActiveTab(t); setActiveCollection(null); closeSidebarOnMobile(); }}>
                   <span className="sidebar-item-left"><span>{EMOJI_MAP[t] || "🗂"}</span><span>{t}</span></span>
                   <span className="sidebar-count">{t === "All" ? items.length : items.filter(i => i.type === t).length}</span>
                 </div>
@@ -464,7 +487,7 @@ export default function App() {
               <div className="sidebar-section-title">Collections</div>
               {regularCols.map(col => (
                 <div key={col.name} className={"sidebar-item" + (activeCollection === col.name ? " active" : "")}
-                  onClick={() => { setActiveCollection(col.name); setActiveTab("All"); }}>
+                  onClick={() => { setActiveCollection(col.name); setActiveTab("All"); closeSidebarOnMobile(); }}>
                   <span className="sidebar-item-left"><span>📁</span><span>{col.name}</span></span>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <span className="sidebar-count">{items.filter(i => i.collections?.includes(col.name)).length}</span>
@@ -479,7 +502,7 @@ export default function App() {
               <div className="sidebar-section-title">Cuisines</div>
               {cuisineCols.map(col => (
                 <div key={col.name} className={"sidebar-item" + (activeCollection === col.name ? " active" : "")}
-                  onClick={() => { setActiveCollection(col.name); setActiveTab("All"); }}>
+                  onClick={() => { setActiveCollection(col.name); setActiveTab("All"); closeSidebarOnMobile(); }}>
                   <span className="sidebar-item-left"><span>🍽️</span><span>{col.name}</span></span>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <span className="sidebar-count">{items.filter(i => i.collections?.includes(col.name)).length}</span>
@@ -497,7 +520,7 @@ export default function App() {
             <button className="toggle-sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
             <div className="search-wrap">
               <span className="search-icon">🔍</span>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search titles and notes…" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" />
             </div>
             <button className="btn-add" onClick={() => { setEditItem(null); setModalOpen(true); }}>+ Add Item</button>
           </div>
@@ -550,4 +573,3 @@ export default function App() {
     </>
   );
 }
-  
